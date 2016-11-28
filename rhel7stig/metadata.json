@@ -1,0 +1,17 @@
+{
+  "name": "kimoon-rhel7stig",
+  "version": "0.2.1",
+  "author": "kimoon",
+  "summary": "Puppet module to implement/maintain RHEL7 security configurations.",
+  "license": "Apache 2.0",
+  "source": "NA",
+  "project_page": "NA",
+  "issues_url": "NA",
+  "dependencies": [
+    {
+      "name": "puppetlabs-stdlib",
+      "version_range": ">= 1.0.0"
+    }
+  ]
+}
+

@@ -1,0 +1,65 @@
+############################################################
+# Class: rhel7stig::implementation::rhel-07-010371
+#
+# Description:
+#  This class will configure pam to force administrators
+#	to unlock accounts locked by excessive login attempts
+#
+# Variables:
+#       None
+#
+# Facts:
+#       None
+#
+# Files:
+#       None
+#
+# Templates:
+#       None
+#
+# Dependencies:
+#       None
+############################################################
+
+class rhel7stig::implementation::rhel-07-010371 {
+   configure_faillock { ['system-auth','password-auth']: }
+}
+
+define configure_faillock {
+	augeas {
+		"Configure Faillock in /etc/pam.d/${name}":
+			context => "/files/etc/pam.d",
+			changes => [
+				"rm ${name}/*[type = 'auth'][module = 'pam_faillock.so']",
+				"ins 01 after ${name}/*[type='auth'][module='pam_unix.so']",
+				"set ${name}/01/type auth",
+				"set ${name}/01/control [default=die]",
+				"set ${name}/01/module pam_faillock.so",
+				"set ${name}/01/argument[1] authfail",
+				"set ${name}/01/argument[2] deny=3",
+				"set ${name}/01/argument[3] unlock_time=604800",
+				"set ${name}/01/argument[4] fail_interval=900",
+				"set ${name}/01/argument[5] even_deny_root",
+				"set ${name}/01/argument[6] audit",
+				"ins 02 after ${name}/01",
+				"set ${name}/02/type auth",
+				"set ${name}/02/control sufficient",
+				"set ${name}/02/module pam_faillock.so",
+				"set ${name}/02/argument[1] authsucc",
+				"set ${name}/02/argument[2] deny=3",
+				"set ${name}/02/argument[3] unlock_time=604800",
+				"set ${name}/02/argument[4] fail_interval=900",
+				"set ${name}/02/argument[5] even_deny_root",
+				"set ${name}/02/argument[6] audit",
+				"set ${name}/*[type = 'auth'][module = 'pam_unix.so']/control \"[success=1 default=bad]\"",
+				],
+			onlyif	=> "match ${name}/*[type='auth'][module='pam_faillock.so'][argument='authfail' or argument='authsucc'][argument='deny=3'][argument='unlock_time=604800'][argument='fail_interval=900'][argument='even_deny_root'] size!=2";
+   } -> augeas {
+		"Modify pam_unix to work with Faillock Configuration in /etc/pam.d/${name}":
+			context => "/files/etc/pam.d",
+			changes => [
+				"set ${name}/*[type = 'auth'][module = 'pam_unix.so']/control \"[success=1 default=bad]\"",
+			],
+			onlyif	=> "match ${name}/*[type='auth'][module='pam_unix.so'][control='[success=1 default=bad]'] size==0";
+	}
+}

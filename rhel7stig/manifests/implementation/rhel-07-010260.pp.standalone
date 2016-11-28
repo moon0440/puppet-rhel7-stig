@@ -1,0 +1,40 @@
+############################################################
+# Class: rhel7stig::implementation::rhel-07-010260
+#
+# Description:
+#  This class will ensure than 'nullok' is removed from
+#	all /etc/{system,password}-auth
+#
+# Variables:
+#       None
+#
+# Facts:
+#       None
+#
+# Files:
+#       None
+#
+# Templates:
+#       None
+#
+# Dependencies:
+#       None
+############################################################
+
+class rhel7stig::implementation::rhel-07-010260 {
+	augeas {
+		"Prevent Log In to Accounts With Empty Password in /etc/pam.d/system-auth":
+                        context => "/files/etc/pam.d",
+                        changes => [
+                                "rm system-auth/*/argument[.= 'nullok']",
+                        ],
+                        onlyif  => "match system-auth/*/argument[.='nullok'] size > 0";
+
+		"Prevent Log In to Accounts With Empty Password in /etc/pam.d/password-auth":
+                        context => "/files/etc/pam.d",
+                        changes => [
+                                "rm password-auth/*/argument[.= 'nullok']",
+                        ],
+                        onlyif  => "match password-auth/*/argument[.='nullok'] size > 0";
+	}
+}
